@@ -1,11 +1,41 @@
-import React from "react";
+import React, { useState } from "react";
 import petsData from "../petsData";
-import { useParams } from "react-router-dom";
+import { Navigate, useNavigate, useParams } from "react-router-dom";
+import { deletePet, getOnePet } from "../api/pets";
+import {
+  useMutation,
+  useQueries,
+  useQuery,
+  useQueryClient,
+} from "@tanstack/react-query";
 const PetDetail = () => {
   const { petId } = useParams();
+  const navigate = useNavigate();
+  const queryClient = useQueryClient();
+  // const [pet, setPets] = useState({});
+  //const handelGetPet = async () => {
+  // const response = await getOnePet(petId);
+  //setPets(response);
+  // };
 
-  const pet = petsData.find((pet) => {
-    return pet.id == petId;
+  //const pet = petsData.find((pet) => {
+  // return pet.id == petId;
+  // });
+  //<button onClick={handelGetPet}> fetch2</button>
+
+  const { data: pet, isLoading } = useQuery({
+    queryKey: ["details", petId],
+    queryFn: () => getOnePet(petId),
+  });
+
+  if (isLoading) return <h1> loading !!!!</h1>;
+
+  const { mutate } = useMutation({
+    mutationKey: ["deletePet"],
+    mutationFn: () => deletePet(petId),
+    onSuccess: () => {
+      navigate("/pets");
+    },
   });
   return (
     <div className="bg-[#F9E3BE] w-screen h-[100vh] flex justify-center items-center">
@@ -26,7 +56,10 @@ const PetDetail = () => {
             Adobt
           </button>
 
-          <button className="w-[70px] border border-black rounded-md  hover:bg-red-400">
+          <button
+            className="w-[70px] border border-black rounded-md  hover:bg-red-400"
+            onClick={mutate}
+          >
             Delete
           </button>
         </div>
